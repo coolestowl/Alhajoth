@@ -1,54 +1,86 @@
 package weibo_test
 
 import (
-	"fmt"
-	"log"
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
+	"github.com/coolestowl/Alhajoth/sites"
 	"github.com/coolestowl/Alhajoth/sites/weibo"
 )
 
-const (
-	UserCookie = "SUB=_2A25PKe7S;"
-)
+var _ = Describe("Weibo", func() {
+	var wb weibo.Weibo
 
-func demo() weibo.Weibo {
-	return weibo.New(UserCookie)
-}
+	BeforeEach(func() {
+		wb = weibo.New("SUB=_2A25PKe7SDeRhGeNO71IY9ifMzD6IHXVs1fKarDV6PUJbkdANLUfwkW1NTuu3_Q-o3HVf-ErMRxF09AX_pAZLn1VV;")
+	})
 
-func TestFriendsFeed(t *testing.T) {
-	items, err := demo().FriendsFeed()
-	if err != nil {
-		t.Error(err)
-	}
+	Describe("Collecting friends feed", func() {
+		var (
+			items []sites.Item
+			err   error
+		)
 
-	if len(items) != 20 {
-		t.Error(len(items))
-	}
+		BeforeEach(func() {
+			items, err = wb.FriendsFeed()
+		})
 
-	for _, item := range items {
-		fmt.Println(item.ID(), item.Name(), item.CreatedAt())
-	}
-}
+		Context("err check", func() {
+			It("should be nil", func() {
+				Expect(err).To(BeNil())
+			})
+		})
 
-func TestContainerID(t *testing.T) {
-	got, err := demo().ContainerID("5582985423", "weibo")
-	if err != nil {
-		t.Error(err)
-	}
+		Context("items length", func() {
+			It("should have data", func() {
+				Expect(len(items)).NotTo(BeZero())
+			})
+		})
+	})
 
-	if got != "1076035582985423" {
-		t.Error(got)
-	}
-}
+	Describe("Testing ContainerID", func() {
+		var (
+			id  string
+			err error
+		)
 
-func TestUserFeed(t *testing.T) {
-	items, err := demo().UserFeed("5582985423", "1076035582985423")
-	if err != nil {
-		t.Error(err)
-	}
+		BeforeEach(func() {
+			id, err = wb.ContainerID("5582985423", "weibo")
+		})
 
-	for _, item := range items {
-		log.Println(item.ID(), item.Name(), item.CreatedAt(), item.Text())
-	}
-}
+		Context("err check", func() {
+			It("should be nil", func() {
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("id check", func() {
+			It("should be correct id", func() {
+				Expect(id).To(Equal("1076035582985423"))
+			})
+		})
+	})
+
+	Describe("Collecting friends feed", func() {
+		var (
+			items []sites.Item
+			err   error
+		)
+
+		BeforeEach(func() {
+			items, err = wb.UserFeed("5582985423", "1076035582985423")
+		})
+
+		Context("err check", func() {
+			It("should be nil", func() {
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("items length", func() {
+			It("should have data", func() {
+				Expect(len(items)).NotTo(BeZero())
+			})
+		})
+	})
+})
